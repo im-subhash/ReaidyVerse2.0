@@ -5,8 +5,7 @@ const PostSchema = new mongoose.Schema({
         type: String
     },
     imageUrl: {
-        type: String,
-        required: true
+        type: String
     },
     author: {
         type: mongoose.Schema.Types.ObjectId,
@@ -25,7 +24,15 @@ const PostSchema = new mongoose.Schema({
     comments: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Comment'
-    }]
+    }],
+    isFlagged: {
+        type: Boolean,
+        default: false
+    },
+    moderationReason: {
+        type: String,
+        default: null
+    }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Post', PostSchema);

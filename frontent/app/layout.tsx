@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Sidebar from "@/components/Sidebar";
 import MobileNav from "@/components/MobileNav";
 import CreatePostModal from "@/components/CreatePostModal";
+import SearchModal from "@/components/SearchModal";
 import { GlobalProvider } from "@/context/GlobalContext";
 import "./globals.css";
 
@@ -26,6 +27,7 @@ export default function RootLayout({
             </main>
             <MobileNav />
             <CreatePostModal />
+            <SearchModal />
           </div>
         </GlobalProvider>
       </body>

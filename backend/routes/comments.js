@@ -10,14 +10,21 @@ router.post('/:postId', async (req, res) => {
         const { text } = req.body;
         const postId = req.params.postId;
 
-        // Mock User
+        // Mock User (same logic as posts.js)
         // In real app: req.user.id
         let user = await User.findOne({ username: 'testuser' });
+
+        if (!user) {
+            user = await User.findOne({ email: 'test@example.com' });
+        }
+
         if (!user) {
             user = await new User({
                 username: 'testuser',
                 email: 'test@example.com',
-                password: 'password'
+                password: 'password',
+                fullName: 'Test User',
+                bio: 'AI-Powered Social Media'
             }).save();
         }
 

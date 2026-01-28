@@ -12,6 +12,8 @@ export interface PostData {
     timestamp: string;
     comments: Comment[];
     isLiked?: boolean;
+    isFlagged?: boolean;
+    moderationReason?: string;
 }
 
 export interface Comment {
@@ -25,30 +27,76 @@ interface GlobalContextType {
     isCreateModalOpen: boolean;
     openCreateModal: () => void;
     closeCreateModal: () => void;
+    isSearchModalOpen: boolean;
+    openSearchModal: () => void;
+    closeSearchModal: () => void;
     posts: PostData[];
     addPost: (post: PostData) => void;
     toggleLike: (postId: string) => void;
+    toggleSave: (postId: string) => void;
     addComment: (postId: string, text: string) => Promise<void>;
     refreshFeed: () => void;
     selectedPost: PostData | null;
     openPostDetail: (post: PostData) => void;
     closePostDetail: () => void;
     deletePost: (postId: string) => void;
+
+    // User State
+    currentUser: any;
+    setCurrentUser: (user: any) => void;
+    refreshUser: () => void;
+    savedPosts: string[];
 }
 
 const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
 
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5002/api';
+// API URL Configuration
+// CRITICAL: In production, NEXT_PUBLIC_API_URL MUST be set in Vercel/Netlify environment variables
+const getApiUrl = () => {
+    if (process.env.NEXT_PUBLIC_API_URL) {
+        return process.env.NEXT_PUBLIC_API_URL;
+    }
+
+    // Development fallback
+    if (process.env.NODE_ENV === 'development') {
+        return 'http://127.0.0.1:5003/api';
+    }
+
+    // Production without API URL set - this will cause issues
+    console.error('CRITICAL: NEXT_PUBLIC_API_URL not set in production!');
+    throw new Error('API URL not configured. Please set NEXT_PUBLIC_API_URL environment variable.');
+};
+
+export const API_URL = getApiUrl();
 
 export function GlobalProvider({ children }: { children: ReactNode }) {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
     const [posts, setPosts] = useState<PostData[]>([]);
-
     const [selectedPost, setSelectedPost] = useState<PostData | null>(null);
+    const [currentUser, setCurrentUser] = useState<any>(null);
+    const [savedPosts, setSavedPosts] = useState<string[]>([]);
 
     useEffect(() => {
         fetchPosts();
+        fetchUser();
     }, []);
+
+    const fetchUser = async () => {
+        try {
+            // For now, hardcode to 'testuser' until we have real auth
+            const res = await fetch(`${API_URL}/users/testuser`);
+            if (res.ok) {
+                const data = await res.json();
+                setCurrentUser(data);
+                setSavedPosts(data.savedPosts || []);
+            }
+        } catch (err) {
+            console.error('Failed to fetch user:', err);
+        }
+    };
+
+    const refreshUser = () => fetchUser();
 
     const fetchPosts = async () => {
         try {
@@ -63,6 +111,9 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
 
     const openCreateModal = () => setIsCreateModalOpen(true);
     const closeCreateModal = () => setIsCreateModalOpen(false);
+
+    const openSearchModal = () => setIsSearchModalOpen(true);
+    const closeSearchModal = () => setIsSearchModalOpen(false);
 
     const openPostDetail = (post: PostData) => setSelectedPost(post);
     const closePostDetail = () => setSelectedPost(null);
@@ -132,6 +183,25 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
         }
     };
 
+    const toggleSave = async (postId: string) => {
+        try {
+            const isSaved = savedPosts.includes(postId);
+
+            // Optimistic update
+            if (isSaved) {
+                setSavedPosts(prev => prev.filter(id => id !== postId));
+                await fetch(`${API_URL}/users/unsave/${postId}`, { method: 'DELETE' });
+            } else {
+                setSavedPosts(prev => [...prev, postId]);
+                await fetch(`${API_URL}/users/save/${postId}`, { method: 'POST' });
+            }
+        } catch (err) {
+            console.error('Failed to toggle save:', err);
+            // Revert on error
+            fetchUser();
+        }
+    };
+
     const deletePost = async (postId: string) => {
         if (!confirm("Are you sure you want to delete this post?")) return;
 
@@ -154,15 +224,23 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
             isCreateModalOpen,
             openCreateModal,
             closeCreateModal,
+            isSearchModalOpen,
+            openSearchModal,
+            closeSearchModal,
             posts,
             addPost,
             toggleLike,
+            toggleSave,
             addComment,
             refreshFeed,
             selectedPost,
             openPostDetail,
             closePostDetail,
-            deletePost
+            deletePost,
+            currentUser,
+            setCurrentUser,
+            refreshUser,
+            savedPosts
         }}>
             {children}
         </GlobalContext.Provider>

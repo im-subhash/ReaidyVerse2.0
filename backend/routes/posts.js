@@ -3,6 +3,7 @@ const Post = require('../models/Post');
 const User = require('../models/User');
 const upload = require('../middleware/upload');
 const cloudinary = require('../config/cloudinary');
+const { moderateText, moderateImage } = require('../services/aiService');
 
 // Get all posts
 router.get('/', async (req, res) => {
@@ -30,7 +31,9 @@ router.get('/', async (req, res) => {
                 username: c.author ? c.author.username : 'Unknown',
                 text: c.isFlagged ? '[Content Hidden by AI]' : c.text
             })),
-            isLiked: false // Placeholder as we don't have auth context yet
+            isLiked: false, // Placeholder as we don't have auth context yet
+            isFlagged: post.isFlagged || false,
+            moderationReason: post.moderationReason || null
         }));
 
         res.json(formattedPosts);
@@ -66,7 +69,9 @@ router.get('/user/:username', async (req, res) => {
                 username: c.author ? c.author.username : 'Unknown',
                 text: c.isFlagged ? '[Content Hidden by AI]' : c.text
             })),
-            isLiked: false
+            isLiked: false,
+            isFlagged: post.isFlagged || false,
+            moderationReason: post.moderationReason || null
         }));
 
         res.json(formattedPosts);
@@ -81,12 +86,24 @@ router.post('/', upload, async (req, res) => {
         // Mock User for now if not sent
         // In real app: req.user.id
         // We will create a default user if none exists for testing
+        // Try to find the default "testuser" or the user associated with that email
+        // Logic: 
+        // 1. Try finding by username 'testuser'
+        // 2. If fail, try finding by email 'test@example.com' (maybe they renamed their user)
+        // 3. If both fail, create new
         let user = await User.findOne({ username: 'testuser' });
+
+        if (!user) {
+            user = await User.findOne({ email: 'test@example.com' });
+        }
+
         if (!user) {
             user = await new User({
                 username: 'testuser',
                 email: 'test@example.com',
-                password: 'password'
+                password: 'password',
+                fullName: 'Test User',
+                bio: 'AI-Powered Social Media'
             }).save();
         }
 
@@ -96,28 +113,50 @@ router.post('/', upload, async (req, res) => {
         if (req.file) console.log('File path:', req.file.path);
 
         if (req.file) {
-            // Try Cloudinary Upload
+            // Cloudinary Upload (REQUIRED for production)
+            if (!process.env.CLOUDINARY_CLOUD_NAME || process.env.CLOUDINARY_CLOUD_NAME === '...') {
+                return res.status(500).json({ error: "Cloudinary not configured. Image upload requires Cloudinary in production." });
+            }
+
             try {
-                if (!process.env.CLOUDINARY_CLOUD_NAME || process.env.CLOUDINARY_CLOUD_NAME === '...') {
-                    throw new Error("Cloudinary not configured");
-                }
                 const result = await cloudinary.uploader.upload(req.file.path);
                 imageUrl = result.secure_url;
-            } catch (pUploadError) {
-                console.warn("Cloudinary upload failed/skipped. Using local file.", pUploadError.message);
-                // Fallback: Use local server URL
-                // Assuming server runs on PORT 5002 by default
-                const PORT = process.env.PORT || 5002;
-                imageUrl = `http://127.0.0.1:${PORT}/uploads/${req.file.filename}`;
+            } catch (uploadError) {
+                console.error("Cloudinary upload failed:", uploadError);
+                return res.status(500).json({ error: "Image upload failed. Please try again." });
             }
-        } else {
-            return res.status(400).json("Image required");
+        } else if (!req.body.caption) {
+            return res.status(400).json("Image or Text required");
+        }
+
+        // --- AI MODERATION STEP ---
+        let isFlagged = false;
+        let moderationReason = null;
+
+        // 1. Check Text
+        if (req.body.caption) {
+            const textResult = await moderateText(req.body.caption);
+            if (textResult.flagged) {
+                isFlagged = true;
+                moderationReason = `Text: ${textResult.reason}`;
+            }
+        }
+
+        // 2. Check Image (only if not already flagged to save API calls)
+        if (!isFlagged && imageUrl) {
+            const imageResult = await moderateImage(imageUrl);
+            if (imageResult.flagged) {
+                isFlagged = true;
+                moderationReason = `Image: ${imageResult.reason}`;
+            }
         }
 
         const newPost = new Post({
             caption: req.body.caption,
             imageUrl: imageUrl,
-            author: user._id
+            author: user._id,
+            isFlagged: isFlagged,
+            moderationReason: moderationReason
         });
 
         const savedPost = await newPost.save();

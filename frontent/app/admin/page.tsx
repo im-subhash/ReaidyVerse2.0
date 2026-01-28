@@ -16,16 +16,32 @@ interface FlaggedComment {
     createdAt: string;
 }
 
+interface FlaggedPost {
+    _id: string;
+    caption?: string;
+    imageUrl?: string;
+    moderationReason: string;
+    author: { _id: string; username: string };
+    createdAt: string;
+}
+
 export default function AdminPage() {
     const [comments, setComments] = useState<FlaggedComment[]>([]);
+    const [posts, setPosts] = useState<FlaggedPost[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchFlaggedComments = async () => {
+    const fetchFlaggedContents = async () => {
         try {
             const res = await fetch(`${API_URL}/admin/flagged`);
             if (res.ok) {
                 const data = await res.json();
-                setComments(data);
+                // Check if API returns old array format (just comments) or new object logic
+                if (Array.isArray(data)) {
+                    setComments(data);
+                } else {
+                    setComments(data.comments || []);
+                    setPosts(data.posts || []);
+                }
             }
         } catch (err) {
             console.error(err);
@@ -35,10 +51,10 @@ export default function AdminPage() {
     };
 
     useEffect(() => {
-        fetchFlaggedComments();
+        fetchFlaggedContents();
     }, []);
 
-    const handleDelete = async (id: string) => {
+    const handleDeleteComment = async (id: string) => {
         if (!confirm('Are you sure you want to delete this comment?')) return;
         try {
             await fetch(`${API_URL}/admin/comments/${id}`, { method: 'DELETE' });
@@ -48,7 +64,7 @@ export default function AdminPage() {
         }
     };
 
-    const handleApprove = async (id: string) => {
+    const handleApproveComment = async (id: string) => {
         try {
             await fetch(`${API_URL}/admin/comments/${id}/approve`, { method: 'PUT' });
             setComments(prev => prev.filter(c => c._id !== id));
@@ -57,10 +73,81 @@ export default function AdminPage() {
         }
     };
 
+    const handleDeletePost = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this post?')) return;
+        try {
+            await fetch(`${API_URL}/admin/posts/${id}`, { method: 'DELETE' });
+            setPosts(prev => prev.filter(p => p._id !== id));
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleApprovePost = async (id: string) => {
+        try {
+            await fetch(`${API_URL}/admin/posts/${id}/approve`, { method: 'PUT' });
+            setPosts(prev => prev.filter(p => p._id !== id));
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     return (
         <div style={{ padding: '40px', maxWidth: '1000px', margin: '0 auto' }}>
             <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '24px' }}>Admin Dashboard</h1>
-            <h2 style={{ fontSize: '18px', marginBottom: '16px' }}>Flagged Comments</h2>
+
+            {/* FLAGGED POSTS SECTION */}
+            <h2 style={{ fontSize: '18px', marginBottom: '16px', marginTop: '30px', borderBottom: '2px solid black', paddingBottom: '10px' }}>Flagged Posts</h2>
+            {isLoading ? (
+                <p>Loading...</p>
+            ) : posts.length === 0 ? (
+                <p>No flagged posts found.</p>
+            ) : (
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', marginBottom: '40px' }}>
+                    <thead>
+                        <tr style={{ borderBottom: '1px solid #dbdbdb' }}>
+                            <th style={{ padding: '12px' }}>User</th>
+                            <th style={{ padding: '12px' }}>Content</th>
+                            <th style={{ padding: '12px' }}>Reason</th>
+                            <th style={{ padding: '12px' }}>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {posts.map(post => (
+                            <tr key={post._id} style={{ borderBottom: '1px solid #dbdbdb' }}>
+                                <td style={{ padding: '12px' }}>{post.author?.username || 'Unknown'}</td>
+                                <td style={{ padding: '12px' }}>
+                                    {post.imageUrl && (
+                                        <div style={{ marginBottom: '8px' }}>
+                                            <a href={post.imageUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'blue' }}>View Image</a>
+                                        </div>
+                                    )}
+                                    {post.caption && <div>"{post.caption.substring(0, 50)}..."</div>}
+                                </td>
+                                <td style={{ padding: '12px', color: '#ed4956' }}>{post.moderationReason}</td>
+                                <td style={{ padding: '12px' }}>
+                                    <button
+                                        onClick={() => handleApprovePost(post._id)}
+                                        style={{ marginRight: '10px', color: '#0095f6', fontWeight: 600 }}
+                                    >
+                                        Keep
+                                    </button>
+                                    <button
+                                        onClick={() => handleDeletePost(post._id)}
+                                        style={{ color: '#ed4956', fontWeight: 600 }}
+                                    >
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            )}
+
+
+            {/* FLAGGED COMMENTS SECTION */}
+            <h2 style={{ fontSize: '18px', marginBottom: '16px', borderBottom: '2px solid black', paddingBottom: '10px' }}>Flagged Comments</h2>
 
             {isLoading ? (
                 <p>Loading...</p>
@@ -84,13 +171,13 @@ export default function AdminPage() {
                                 <td style={{ padding: '12px', color: '#ed4956' }}>{comment.moderationReason}</td>
                                 <td style={{ padding: '12px' }}>
                                     <button
-                                        onClick={() => handleApprove(comment._id)}
+                                        onClick={() => handleApproveComment(comment._id)}
                                         style={{ marginRight: '10px', color: '#0095f6', fontWeight: 600 }}
                                     >
                                         Keep
                                     </button>
                                     <button
-                                        onClick={() => handleDelete(comment._id)}
+                                        onClick={() => handleDeleteComment(comment._id)}
                                         style={{ color: '#ed4956', fontWeight: 600 }}
                                     >
                                         Delete

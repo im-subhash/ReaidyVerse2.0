@@ -45,12 +45,15 @@ export default function PostDetailModal() {
 
             <div className={styles.modal}>
                 {/* Left: Image */}
-                <div className={styles.imageContainer}>
-                    <img src={selectedPost.imageUrl} alt="Post" className={styles.image} />
-                </div>
+                {/* Left: Image (Conditional) */}
+                {selectedPost.imageUrl && (
+                    <div className={styles.imageContainer}>
+                        <img src={selectedPost.imageUrl} alt="Post" className={styles.image} />
+                    </div>
+                )}
 
-                {/* Right: Content */}
-                <div className={styles.content}>
+                {/* Right: Content (Adjust width if no image) */}
+                <div className={styles.content} style={{ width: selectedPost.imageUrl ? '50%' : '100%', maxWidth: selectedPost.imageUrl ? 'none' : '600px', margin: selectedPost.imageUrl ? '0' : '0 auto' }}>
                     {/* Header */}
                     <div className={styles.header}>
                         <div style={{ display: 'flex', alignItems: 'center' }}>

@@ -1,12 +1,12 @@
 "use client";
 
 import Link from 'next/link';
-import { Home, Search, PlusSquare, User, Heart, Shield } from 'lucide-react';
+import { Home, Search, PlusSquare, User, Shield } from 'lucide-react';
 import { useGlobalContext } from '@/context/GlobalContext';
 import styles from './Sidebar.module.css';
 
 export default function Sidebar() {
-    const { openCreateModal } = useGlobalContext();
+    const { openCreateModal, openSearchModal, currentUser } = useGlobalContext();
 
     return (
         <div className={styles.sidebar}>
@@ -20,15 +20,12 @@ export default function Sidebar() {
                     <span className={styles.navLabel}>Home</span>
                 </Link>
 
-                <div className={styles.navItem}>
+                <div className={styles.navItem} onClick={openSearchModal}>
                     <Search className={styles.navIcon} />
                     <span className={styles.navLabel}>Search</span>
                 </div>
 
-                <div className={styles.navItem}>
-                    <Heart className={styles.navIcon} />
-                    <span className={styles.navLabel}>Notifications</span>
-                </div>
+
 
                 <div className={styles.navItem} onClick={openCreateModal}>
                     <PlusSquare className={styles.navIcon} />
@@ -36,7 +33,23 @@ export default function Sidebar() {
                 </div>
 
                 <Link href="/profile" className={styles.navItem}>
-                    <User className={styles.navIcon} />
+                    {/* Dynamic Avatar for Profile Link */}
+                    {currentUser?.avatar ? (
+                        <div style={{ padding: '2px', display: 'flex' }}>
+                            <img
+                                src={currentUser.avatar}
+                                alt="Profile"
+                                style={{
+                                    width: '24px',
+                                    height: '24px',
+                                    borderRadius: '50%',
+                                    objectFit: 'cover'
+                                }}
+                            />
+                        </div>
+                    ) : (
+                        <User className={styles.navIcon} />
+                    )}
                     <span className={styles.navLabel}>Profile</span>
                 </Link>
 

@@ -43,6 +43,20 @@
     background-color: #efefef;
 }
 
+.hiddenContent {
+    width: 100%;
+    min-height: auto;
+    background-color: #f8f8f8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 .postImage {
     width: 100%;
     height: auto;
@@ -151,4 +165,16 @@
 
 .viewComments:hover {
     color: #555;
+}
+
+.textBody {
+    padding: 20px;
+    font-size: 16px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    background-color: var(--background);
+    color: var(--foreground);
+    min-height: 100px;
+    display: flex;
+    align-items: center;
 }

@@ -56,10 +56,14 @@ app.get('/api/ping', (req, res) => {
 const postsRoutes = require('./routes/posts');
 const commentsRoutes = require('./routes/comments');
 const adminRoutes = require('./routes/admin');
+const usersRoutes = require('./routes/users');
+const searchRoutes = require('./routes/search');
 
 app.use('/api/posts', postsRoutes);
 app.use('/api/comments', commentsRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/users', usersRoutes);
+app.use('/api/search', searchRoutes);
 
 // 404 Handler (Log if we hit this)
 app.use((req, res, next) => {

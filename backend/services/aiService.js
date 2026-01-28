@@ -99,4 +99,53 @@ const moderateText = async (text) => {
     }
 };
 
-module.exports = { moderateText };
+
+
+const moderateImage = async (imageUrl) => {
+    try {
+        if (!process.env.GROQ_API_KEY || process.env.GROQ_API_KEY.includes('paste_your_groq_key')) {
+            console.warn("Groq API Key missing. Image Moderation skipped.");
+            return { flagged: false, categories: [], reason: null };
+        }
+
+        const completion = await openai.chat.completions.create({
+            model: "meta-llama/llama-4-scout-17b-16e-instruct",
+            messages: [
+                {
+                    role: "user",
+                    content: [
+                        { type: "text", text: "You are a highly strict content moderator. Analyze this image for: 1. Nudity/Pornography (including partial, suggestive, or screenshots of porn sites). 2. Violence/Gore. 3. Hate Symbols. 4. Visual text containing 'porn', 'xxx', or sexual slurs. If ANY trace is found, set flagged to true. Return ONLY JSON: { \"flagged\": boolean, \"reason\": string }." },
+                        {
+                            type: "image_url",
+                            image_url: {
+                                url: imageUrl,
+                            },
+                        },
+                    ],
+                },
+            ],
+            response_format: { type: "json_object" },
+            temperature: 0,
+        });
+
+        const aiResponse = JSON.parse(completion.choices[0].message.content);
+        console.log("AI Image Analysis:", aiResponse);
+
+        if (aiResponse.flagged) {
+            return {
+                flagged: true,
+                categories: ['image_violation'],
+                reason: aiResponse.reason || 'Flagged by AI Vision'
+            };
+        }
+
+        return { flagged: false, categories: [], reason: null };
+
+    } catch (error) {
+        console.error("Image Moderation Error:", error.message);
+        // Fail open (allow) if AI fails, to not block users during outages
+        return { flagged: false, categories: [], reason: null };
+    }
+};
+
+module.exports = { moderateText, moderateImage };

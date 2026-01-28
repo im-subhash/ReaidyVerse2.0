@@ -24,7 +24,16 @@ const UserSchema = new mongoose.Schema({
     avatar: {
         type: String,
         default: 'https://ui-avatars.com/api/?background=random'
-    }
+    },
+    fullName: {
+        type: String,
+        default: ''
+    },
+    bio: {
+        type: String,
+        default: ''
+    },
+    savedPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }]
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', UserSchema);

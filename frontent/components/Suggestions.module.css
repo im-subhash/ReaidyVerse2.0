@@ -1,9 +1,11 @@
 .container {
-    padding-left: 64px;
-    width: 320px;
+    padding-left: 32px;
+    width: 380px;
     display: none;
     align-self: flex-start;
-    margin-top: 16px;
+    margin-top: 28px;
+    position: sticky;
+    top: 20px;
 }
 
 @media (min-width: 1100px) {
@@ -17,19 +19,35 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 24px;
+    margin-bottom: 28px;
+    padding: 12px;
+    border-radius: 12px;
+    transition: background 0.2s;
+}
+
+.userProfile:hover {
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .userInfo {
     display: flex;
     align-items: center;
+    gap: 14px;
 }
 
 .avatar {
-    width: 44px;
-    height: 44px;
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
-    margin-right: 12px;
+    border: 2px solid transparent;
+    background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888) border-box;
+    padding: 2px;
+}
+
+.avatar img {
+    border-radius: 50%;
+    width: 100%;
+    height: 100%;
 }
 
 .username {
@@ -41,6 +59,7 @@
 .fullName {
     font-size: 14px;
     color: #8e8e8e;
+    margin-top: 2px;
 }
 
 .switchAction {
@@ -48,26 +67,39 @@
     font-weight: 600;
     color: #0095f6;
     cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.switchAction:hover {
+    opacity: 0.7;
 }
 
 /* Suggested Header */
 .suggestionsHeader {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 16px;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 0 12px;
 }
 
 .headerTitle {
     color: #8e8e8e;
     font-weight: 600;
     font-size: 14px;
+    letter-spacing: 0.3px;
 }
 
 .seeAll {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
     color: #262626;
     cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.seeAll:hover {
+    opacity: 0.7;
 }
 
 /* List Item */
@@ -75,58 +107,106 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    transition: background 0.2s;
+    margin-bottom: 4px;
+}
+
+.suggestionItem:hover {
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .suggestionInfo {
     display: flex;
     align-items: center;
+    gap: 14px;
 }
 
 .suggestionAvatar {
-    width: 32px;
-    height: 32px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
-    margin-right: 12px;
-    background: #efefef;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.suggestionAvatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .suggestionUsername {
     font-weight: 600;
     font-size: 14px;
     color: #262626;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.verified {
+    color: #0095f6;
+    font-size: 12px;
 }
 
 .suggestionMeta {
     font-size: 12px;
     color: #8e8e8e;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.metaAvatar {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #444;
 }
 
 .followAction {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
     color: #0095f6;
     cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.followAction:hover {
+    background: rgba(0, 149, 246, 0.1);
 }
 
 /* Footer */
 .footer {
-    margin-top: 30px;
-    font-size: 12px;
-    color: #c7c7c7;
-    line-height: 1.5;
+    margin-top: 40px;
+    padding: 0 12px;
+    font-size: 11px;
+    color: #6b6b6b;
+    line-height: 1.8;
 }
 
 .footerLink {
-    margin-right: 4px;
+    margin-right: 2px;
     cursor: pointer;
+    transition: color 0.2s;
 }
 
 .footerLink:hover {
-    text-decoration: underline;
+    color: #a8a8a8;
 }
 
 .copyright {
-    margin-top: 16px;
+    margin-top: 20px;
     text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.5px;
 }
