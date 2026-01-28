@@ -1,8 +1,9 @@
-import { API_URL } from '@/context/GlobalContext';
+"use client";
 
-// ... inside fetchUserPosts ...
-// Fetching posts for 'testuser' specifically
-const res = await fetch(`${API_URL}/posts/user/testuser`);
+import { API_URL } from '@/context/GlobalContext';
+import { useState, useEffect } from 'react';
+
+
 import { useGlobalContext, PostData } from '@/context/GlobalContext';
 import { Settings, Grid, Bookmark, Tag } from 'lucide-react';
 import PostDetailModal from '@/components/PostDetailModal';
@@ -28,8 +29,6 @@ export default function ProfilePage() {
     useEffect(() => {
         const fetchUserPosts = async () => {
             try {
-                import { API_URL } from '@/context/GlobalContext';
-                //...
                 // Fetching posts for 'testuser' specifically
                 const res = await fetch(`${API_URL}/posts/user/testuser`);
                 if (res.ok) {

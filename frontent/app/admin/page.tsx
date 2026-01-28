@@ -1,14 +1,11 @@
 "use client";
 
 import { API_URL } from '@/context/GlobalContext';
+import { useState, useEffect } from 'react';
 
 // ...
 
-const res = await fetch(`${API_URL}/admin/flagged`);
-// ...
-await fetch(`${API_URL}/admin/comments/${id}`, { method: 'DELETE' });
-// ...
-await fetch(`${API_URL}/admin/comments/${id}/approve`, { method: 'PUT' });
+
 
 interface FlaggedComment {
     _id: string;

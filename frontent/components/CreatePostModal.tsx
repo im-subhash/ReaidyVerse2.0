@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from 'react';
-import { useGlobalContext } from '@/context/GlobalContext';
+import { useGlobalContext, API_URL } from '@/context/GlobalContext';
 import { Image as ImageIcon, X } from 'lucide-react';
 import styles from './CreatePostModal.module.css';
 
@@ -31,7 +31,7 @@ export default function CreatePostModal() {
                 // Defaulting author for now since we don't have auth
                 // In a real app, the token would handle it
 
-                import { API_URL } from '@/context/GlobalContext';
+                // IMPORTANT: Ensure this URL matches your backend
                 //...
                 // IMPORTANT: Ensure this URL matches your backend
                 const res = await fetch(`${API_URL}/posts`, {
