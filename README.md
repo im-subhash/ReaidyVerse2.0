@@ -19,7 +19,7 @@ By leveraging cutting-edge AI, we ensuring that interactions remain respectful a
 ## ✨ Features
 
 -   **🤖 AI Content Moderation:**
-    -   Real-time analysis of text (posts & comments) using **Groq AI (Llama-3)**.
+    -   Real-time analysis of text (posts & comments) using **Groq AI (Llama-3)(The free version of OpenAI has exhausted the daily quota.)**.
     -   Image analysis using **Vision AI** to detect sensitive visual content.
     -   Detects: Hate Speech, Spam, Harassment, Violence, Self-harm, and Nudity.
 -   **🛡️ Admin Review System:** flagged content is hidden from public view and queued for admin review.
