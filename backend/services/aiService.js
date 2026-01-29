@@ -109,7 +109,7 @@ const moderateImage = async (imageUrl) => {
         }
 
         const completion = await openai.chat.completions.create({
-            model: "llama-3.2-11b-vision-preview", // Correct Groq Vision Model
+            model: "llama-3.2-90b-vision-preview", // Updated to supported Groq Vision Model
             messages: [
                 {
                     role: "user",
