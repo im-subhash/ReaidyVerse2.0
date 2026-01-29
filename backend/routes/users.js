@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require('../models/User');
 const multer = require('multer');
 const path = require('path');
+const cloudinary = require('../config/cloudinary');
 
 // Multer Setup for Avatar Uploads
 const storage = multer.diskStorage({
@@ -60,10 +61,19 @@ router.put('/:username', upload.single('avatar'), async (req, res) => {
 
         // Handle Avatar Upload
         if (req.file) {
-            // If using local uploads
-            updateData.avatar = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
-
-            // TODO: Add Cloudinary logic here if needed, but local is fine for "deployed" if persistent disk
+            // Upload to Cloudinary (required for production)
+            try {
+                const result = await cloudinary.uploader.upload(req.file.path, {
+                    folder: 'avatars',
+                    transformation: [
+                        { width: 400, height: 400, crop: 'fill' }
+                    ]
+                });
+                updateData.avatar = result.secure_url;
+            } catch (uploadError) {
+                console.error('Cloudinary avatar upload failed:', uploadError);
+                return res.status(500).json({ message: 'Avatar upload failed. Please try again.' });
+            }
         }
 
         // Handle Username Change (Check uniqueness)
