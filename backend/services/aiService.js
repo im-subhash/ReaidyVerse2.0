@@ -109,7 +109,7 @@ const moderateImage = async (imageUrl) => {
         }
 
         const completion = await openai.chat.completions.create({
-            model: "llama-3.2-90b-vision-preview", // Updated to supported Groq Vision Model
+            model: "meta-llama/llama-4-scout-17b-16e-instruct", // Llama 4 Scout - current supported vision model
             messages: [
                 {
                     role: "user",
